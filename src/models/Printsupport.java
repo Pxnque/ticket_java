@@ -59,6 +59,24 @@ public class Printsupport {
 
     /** Column titles for the printed receipt (3 columns only). */
     public static final String[] TITLE = new String[]{"CANT", "DESC", "MONTO"};
+    
+    public static double computeTotal() {
+    if (itemsTable == null || itemsTable.getRowCount() == 0) {
+        return 0.0;
+    }
+    double total = 0.0;
+    TableModel mod = itemsTable.getModel();
+    for (int i = 0; i < mod.getRowCount(); i++) {
+        try {
+            int cantidad = Integer.parseInt(mod.getValueAt(i, 0).toString());
+            double monto = Double.parseDouble(mod.getValueAt(i, 2).toString());
+            total += cantidad * monto;
+        } catch (NumberFormatException e) {
+            // skip rows with invalid data
+        }
+    }
+    return total;
+}
 
     /**
      * Accepts raw data (possibly with 4 columns) and prepares an internal 3‑column
@@ -203,10 +221,10 @@ public class Printsupport {
             try {
                 /* Header text */
                 int hdrY = 80;
-                g2d.drawString("ABC Shopping Complex", 40, hdrY);
+                g2d.drawString("Consultorio Jimmy", 40, hdrY);
                 g2d.drawString("CopyWrite 2009-2014", 50, hdrY + 10);
                 g2d.drawString(now(), 10, hdrY + 20);
-                g2d.drawString("Cashier : admin", 10, hdrY + 30);
+                g2d.drawString("Cashier : Roy", 10, hdrY + 30);
 
                 /* Column headers */
                 g2d.drawLine(10, hdrY + 40, 180, hdrY + 40);
@@ -229,11 +247,19 @@ public class Printsupport {
 
                     cH += 10; // next line
                 }
+                font = new Font("Monospaced", Font.BOLD, 8);
+                g2d.setFont(font);
+                double total = Printsupport.computeTotal();
+                g2d.drawLine(10, cH, 180, cH);  // separator line
+                cH += 10;
+                g2d.drawString("TOTAL:", COL_X_DESC - 20, cH);
+                g2d.drawString(String.format("$%.2f", total), COL_X_MONTO, cH);
 
                 /* Footer */
-                font = new Font("Arial", Font.BOLD, 16);
+                /*font = new Font("Arial", Font.BOLD, 6);
                 g2d.setFont(font);
-                g2d.drawString("Thank You Come Again", 30, cH + 10);
+                g2d.drawString("Thank You Come Again", 30, cH + 20);*/
+                
             } catch (Exception r) {
                 r.printStackTrace();
             }
