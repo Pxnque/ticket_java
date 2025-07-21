@@ -7,8 +7,12 @@ package gui;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import models.Printsupport;
+import models.Printsupport.MyPrintable;
 
 /**
  *
@@ -316,8 +320,20 @@ public class App extends javax.swing.JFrame {
     }//GEN-LAST:event_agregarButtonActionPerformed
 
     private void imprimirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imprimirButtonActionPerformed
-        // TODO add your handling code here:
-        
+       Printsupport ps = new Printsupport();
+        // Grab *all* table data (4 columns)
+        Object[][] raw = ps.getTableData(itemsTable);
+
+        // Let Printsupport trim to 3 columns internally
+        Printsupport.setItems(raw);
+
+        PrinterJob pj = PrinterJob.getPrinterJob();
+        pj.setPrintable(new Printsupport.MyPrintable(), Printsupport.getPageFormat(pj));
+        try {
+            pj.print();
+        } catch (PrinterException ex) {
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_imprimirButtonActionPerformed
 
     private void montoField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_montoField1ActionPerformed
