@@ -13,6 +13,10 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import models.Printsupport;
 import models.Printsupport.MyPrintable;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.swing.text.AbstractDocument;
+import models.NumericFilters;
 
 /**
  *
@@ -21,6 +25,7 @@ import models.Printsupport.MyPrintable;
 public class App extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(App.class.getName());
+    private static final String THERMAL_PRINTER_HINT = "POS-80";
 
     /**
      * Creates new form App
@@ -29,14 +34,11 @@ public class App extends javax.swing.JFrame {
     public App() {
         
         initComponents();
+        ((AbstractDocument) cantidadField.getDocument()).setDocumentFilter(new NumericFilters.IntegerFilter());
+        ((AbstractDocument) montoField1.getDocument()).setDocumentFilter(new NumericFilters.DecimalFilter());
         initTableModel();
-        setCustomStyling();
         
-    }
-    private void setCustomStyling(){
-        cantidadField.putClientProperty("cantidadField.placeholderText", "Ingresa la descripción del artículo...");
-        montoField1.putClientProperty("montoField1.placeholderText", "0.0");
-        cantidadField.putClientProperty("cantidadField.placeholderText", "0");
+        
     }
     private void initTableModel() {
     tableModel = new DefaultTableModel(
@@ -62,8 +64,6 @@ public class App extends javax.swing.JFrame {
 
     itemsTable.setModel(tableModel);
 
-    // Optional: start with one example row like your React version
-    tableModel.addRow(new Object[]{2, "Operación de ojos", 500.00, "X"});
 
     actualizarTotal();
 
@@ -93,12 +93,14 @@ public class App extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        descripcionField = new javax.swing.JTextField();
+        pacienteField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         cantidadField = new javax.swing.JTextField();
         montoField1 = new javax.swing.JTextField();
         agregarButton = new javax.swing.JButton();
+        jLabel6 = new javax.swing.JLabel();
+        descripcionField = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -118,11 +120,11 @@ public class App extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("Cantidad:");
 
-        descripcionField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        descripcionField.setToolTipText("");
-        descripcionField.addActionListener(new java.awt.event.ActionListener() {
+        pacienteField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        pacienteField.setToolTipText("");
+        pacienteField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                descripcionFieldActionPerformed(evt);
+                pacienteFieldActionPerformed(evt);
             }
         });
 
@@ -135,6 +137,11 @@ public class App extends javax.swing.JFrame {
         montoField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 montoField1ActionPerformed(evt);
+            }
+        });
+        montoField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                montoField1KeyPressed(evt);
             }
         });
 
@@ -150,36 +157,54 @@ public class App extends javax.swing.JFrame {
             }
         });
 
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel6.setText("Nombre del paciente:");
+
+        descripcionField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        descripcionField.setToolTipText("");
+        descripcionField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                descripcionFieldActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addGap(278, 278, 278)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(cantidadField, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(montoField1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(agregarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel3)
-                    .addComponent(descripcionField, javax.swing.GroupLayout.PREFERRED_SIZE, 799, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(descripcionField, javax.swing.GroupLayout.PREFERRED_SIZE, 799, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(jLabel4)
+                                    .addGap(278, 278, 278)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel2)
+                                        .addComponent(cantidadField, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(montoField1, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(agregarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel3)
+                        .addComponent(pacienteField, javax.swing.GroupLayout.PREFERRED_SIZE, 799, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(25, 25, 25))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
+                .addGap(21, 21, 21)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pacienteField, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21)
                 .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(descripcionField, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(43, 43, 43)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(descripcionField, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(21, 21, 21)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel4))
@@ -229,7 +254,7 @@ public class App extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -310,35 +335,54 @@ public class App extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void descripcionFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descripcionFieldActionPerformed
+    private void pacienteFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pacienteFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_descripcionFieldActionPerformed
+    }//GEN-LAST:event_pacienteFieldActionPerformed
 
     private void agregarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarButtonActionPerformed
         // TODO add your handling code here:
         agregarItem();
+        montoField1.setText("0.0");
     }//GEN-LAST:event_agregarButtonActionPerformed
 
     private void imprimirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imprimirButtonActionPerformed
-       Printsupport ps = new Printsupport();
-        // Grab *all* table data (4 columns)
-        Object[][] raw = ps.getTableData(itemsTable);
+    Object[][] raw = new Printsupport().getTableData(itemsTable);
+    String nombrePaciente = pacienteField.getText().trim();
+    Printsupport.setItems(raw,nombrePaciente);
 
-        // Let Printsupport trim to 3 columns internally
-        Printsupport.setItems(raw);
-
-        PrinterJob pj = PrinterJob.getPrinterJob();
-        pj.setPrintable(new Printsupport.MyPrintable(), Printsupport.getPageFormat(pj));
-        try {
-            pj.print();
-        } catch (PrinterException ex) {
-            ex.printStackTrace();
+    PrinterJob pj = PrinterJob.getPrinterJob();
+    try {
+        PrintService ps = findPrintServiceByName(THERMAL_PRINTER_HINT);
+        if (ps == null) {
+            // Fallback: default printer
+            ps = PrintServiceLookup.lookupDefaultPrintService();
         }
+        if (ps == null) {
+            JOptionPane.showMessageDialog(this, "No printer found.");
+            return;
+        }
+
+        pj.setPrintService(ps);
+        pj.setPrintable(new Printsupport.MyPrintable(), Printsupport.getPageFormat(pj));
+        pj.print(); // no dialog
+    } catch (PrinterException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Error al imprimir: " + ex.getMessage());
+    }
     }//GEN-LAST:event_imprimirButtonActionPerformed
 
     private void montoField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_montoField1ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_montoField1ActionPerformed
+
+    private void montoField1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_montoField1KeyPressed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_montoField1KeyPressed
+
+    private void descripcionFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descripcionFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_descripcionFieldActionPerformed
 
     /**
      * @param args the command line arguments
@@ -374,7 +418,7 @@ public class App extends javax.swing.JFrame {
         actualizarTotal();
 
         descripcionField.setText("");
-        montoField1.setText("0.00");
+        montoField1.setText("0.0");
         cantidadField.setText("0");
     } catch (NumberFormatException e) {
         JOptionPane.showMessageDialog(this, "Monto o cantidad inválidos.");
@@ -389,6 +433,18 @@ public class App extends javax.swing.JFrame {
     }
     labelTotal.setText("Total: $" + String.format("%.2f", total));
 }
+    private PrintService findPrintServiceByName(String printerSubstr) {
+    PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
+    if (services == null) return null;
+    for (PrintService ps : services) {
+        if (ps.getName().toLowerCase().contains(printerSubstr.toLowerCase())) {
+            return ps;
+        }
+    }
+    return null;
+}
+
+    
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -402,11 +458,13 @@ public class App extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelTotal;
     private javax.swing.JTextField montoField1;
+    private javax.swing.JTextField pacienteField;
     // End of variables declaration//GEN-END:variables
 }
