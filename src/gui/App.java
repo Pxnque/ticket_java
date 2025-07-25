@@ -204,7 +204,7 @@ public class App extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(descripcionField, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(21, 21, 21)
+                .addGap(4, 4, 4)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jLabel4))
@@ -213,7 +213,7 @@ public class App extends javax.swing.JFrame {
                     .addComponent(cantidadField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(montoField1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(agregarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(27, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
@@ -254,7 +254,7 @@ public class App extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -290,11 +290,11 @@ public class App extends javax.swing.JFrame {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(25, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelTotal)
                     .addComponent(imprimirButton, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(17, 17, 17))
+                .addGap(4, 4, 4))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -320,7 +320,7 @@ public class App extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addGap(0, 0, 0)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -346,9 +346,17 @@ public class App extends javax.swing.JFrame {
     }//GEN-LAST:event_agregarButtonActionPerformed
 
     private void imprimirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imprimirButtonActionPerformed
-    Object[][] raw = new Printsupport().getTableData(itemsTable);
+ Object[][] raw = new Printsupport().getTableData(itemsTable);
     String nombrePaciente = pacienteField.getText().trim();
     Printsupport.setItems(raw,nombrePaciente);
+    if(itemsTable.getRowCount() == 0){
+        JOptionPane.showMessageDialog(this, "No hay items para imprimir");
+        return;
+    }
+    if(nombrePaciente.isEmpty()){
+        JOptionPane.showMessageDialog(this, "El nombre del paciente está vacío");
+        return;
+    }
 
     PrinterJob pj = PrinterJob.getPrinterJob();
     try {
@@ -365,6 +373,8 @@ public class App extends javax.swing.JFrame {
         pj.setPrintService(ps);
         pj.setPrintable(new Printsupport.MyPrintable(), Printsupport.getPageFormat(pj));
         pj.print(); // no dialog
+        limpiarTabla();
+        
     } catch (PrinterException ex) {
         ex.printStackTrace();
         JOptionPane.showMessageDialog(this, "Error al imprimir: " + ex.getMessage());
@@ -398,6 +408,11 @@ public class App extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new App().setVisible(true));
     }
+    private void limpiarTabla(){
+        tableModel.setRowCount(0);
+        labelTotal.setText("Total: $0");
+        pacienteField.setText("");
+    }
     private void agregarItem() {
     try {
         String descripcion = descripcionField.getText().trim();
@@ -412,7 +427,7 @@ public class App extends javax.swing.JFrame {
         double monto = Double.parseDouble(montoTxt);
         int cantidad = (int) Double.parseDouble(cantidadTxt); // allows "0.00" style input
 
-        // Add the row (here MONTO is the line amount, just like your React code)
+       
         tableModel.addRow(new Object[]{cantidad, descripcion, monto, "X"});
 
         actualizarTotal();
@@ -420,6 +435,8 @@ public class App extends javax.swing.JFrame {
         descripcionField.setText("");
         montoField1.setText("0.0");
         cantidadField.setText("0");
+        int p = 0;
+        montoField1.setText("0");
     } catch (NumberFormatException e) {
         JOptionPane.showMessageDialog(this, "Monto o cantidad inválidos.");
     }
