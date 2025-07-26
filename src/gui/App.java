@@ -4,19 +4,23 @@
  */
 package gui;
 
+import Objects.TicketItem;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import database.ConnectionDB;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import models.Printsupport;
-import models.Printsupport.MyPrintable;
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.swing.text.AbstractDocument;
 import models.NumericFilters;
+
 
 /**
  *
@@ -37,6 +41,7 @@ public class App extends javax.swing.JFrame {
         ((AbstractDocument) cantidadField.getDocument()).setDocumentFilter(new NumericFilters.IntegerFilter());
         ((AbstractDocument) montoField1.getDocument()).setDocumentFilter(new NumericFilters.DecimalFilter());
         initTableModel();
+        ConnectionDB.initializeDatabase();
         
         
     }
@@ -365,7 +370,7 @@ public class App extends javax.swing.JFrame {
     }//GEN-LAST:event_agregarButtonActionPerformed
 
     private void imprimirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imprimirButtonActionPerformed
- Object[][] raw = new Printsupport().getTableData(itemsTable);
+    Object[][] raw = new Printsupport().getTableData(itemsTable);
     String nombrePaciente = pacienteField.getText().trim();
     Printsupport.setItems(raw,nombrePaciente);
     if(itemsTable.getRowCount() == 0){
@@ -392,6 +397,21 @@ public class App extends javax.swing.JFrame {
         pj.setPrintService(ps);
         pj.setPrintable(new Printsupport.MyPrintable(), Printsupport.getPageFormat(pj));
         pj.print(); // no dialog
+        double total = getTotal();
+        List<TicketItem> items = getTableItemsAsList();
+        
+        // Save to database
+        boolean saved = ConnectionDB.saveTicketWithItems(nombrePaciente, total, items);
+        if (saved) {
+            System.out.println("Ticket saved to database successfully");
+            // Also save using your existing TicketSaver for compatibility
+           // TicketSaver.guardarTicketConItems(nombrePaciente, itemsTable, total);
+        } else {
+            System.err.println("Failed to save ticket to database");
+            JOptionPane.showMessageDialog(this, "Advertencia: No se pudo guardar en la base de datos");
+            // Still save using your existing method as fallback
+           // TicketSaver.guardarTicketConItems(nombrePaciente, itemsTable, total);
+        }
         limpiarTabla();
         
     } catch (PrinterException ex) {
@@ -415,7 +435,7 @@ public class App extends javax.swing.JFrame {
 
     private void historialButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historialButtonActionPerformed
         // TODO add your handling code here:
-        
+        System.out.println( String.valueOf(System.currentTimeMillis()));
         new Dashboard().setVisible(true);
     }//GEN-LAST:event_historialButtonActionPerformed
 
@@ -429,6 +449,9 @@ public class App extends javax.swing.JFrame {
             System.out.println("Error al aplicar el look and feel: "+e);
         }
         //</editor-fold>
+          Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        ConnectionDB.closeConnection();
+        }));
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new App().setVisible(true));
@@ -466,13 +489,18 @@ public class App extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Monto o cantidad inválidos.");
     }
 }
-    private void actualizarTotal() {
+    private double getTotal() {
     double total = 0.0;
     for (int i = 0; i < tableModel.getRowCount(); i++) {
         int cant = ((Number) tableModel.getValueAt(i, 0)).intValue();
         double monto = ((Number) tableModel.getValueAt(i, 2)).doubleValue();
         total += cant * monto;
     }
+    return total;
+}
+    
+    private void actualizarTotal() {
+    double total = getTotal();
     labelTotal.setText("Total: $" + String.format("%.2f", total));
 }
     private PrintService findPrintServiceByName(String printerSubstr) {
@@ -484,6 +512,19 @@ public class App extends javax.swing.JFrame {
         }
     }
     return null;
+}
+    private List<TicketItem> getTableItemsAsList() {
+    List<TicketItem> items = new ArrayList<>();
+    
+    for (int i = 0; i < tableModel.getRowCount(); i++) {
+        int cantidad = ((Number) tableModel.getValueAt(i, 0)).intValue();
+        String descripcion = (String) tableModel.getValueAt(i, 1);
+        double monto = ((Number) tableModel.getValueAt(i, 2)).doubleValue();
+        
+        items.add(new TicketItem(descripcion, monto, cantidad));
+    }
+    
+    return items;
 }
 
     
