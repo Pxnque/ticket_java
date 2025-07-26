@@ -62,7 +62,7 @@ public class Dashboard extends javax.swing.JFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
-        pacientelabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/doctor_icon_142653.png"))); // NOI18N
+        pacientelabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/pacienteico.png"))); // NOI18N
         pacientelabel.setText("pacientes atendidos");
 
         cantidadpacienteslabel.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
@@ -180,10 +180,9 @@ public class Dashboard extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(ventasmeslabel, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(MesComboBox, 0, 216, Short.MAX_VALUE)
-                                .addComponent(labelMes)
-                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(MesComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 216, Short.MAX_VALUE)
+                            .addComponent(labelMes, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(AñoComboBox, 0, 216, Short.MAX_VALUE)
