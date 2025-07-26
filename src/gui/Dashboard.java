@@ -7,12 +7,17 @@ package gui;
 import Objects.TicketItem;
 import Objects.TicketRecord;
 import database.ConnectionDB;
+import java.io.File;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import models.CSVExporter;
+import models.PDFExporter;
 /**
  *
  * @author PC
@@ -300,6 +305,11 @@ public class Dashboard extends javax.swing.JFrame {
         pdfbutton.setBackground(new java.awt.Color(190, 8, 8));
         pdfbutton.setForeground(new java.awt.Color(255, 255, 255));
         pdfbutton.setText("Exportar a PDF");
+        pdfbutton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pdfbuttonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -398,6 +408,7 @@ public class Dashboard extends javax.swing.JFrame {
 
     private void csvbuttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_csvbuttonActionPerformed
         // TODO add your handling code here:
+         exportToCSV();
     }//GEN-LAST:event_csvbuttonActionPerformed
 
     private void registroTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registroTableMouseClicked
@@ -406,6 +417,11 @@ public class Dashboard extends javax.swing.JFrame {
             viewTicketDetails();
         }
     }//GEN-LAST:event_registroTableMouseClicked
+
+    private void pdfbuttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pdfbuttonActionPerformed
+        // TODO add your handling code here:
+        exportToPDF();
+    }//GEN-LAST:event_pdfbuttonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -500,6 +516,121 @@ public class Dashboard extends javax.swing.JFrame {
         
         JOptionPane.showMessageDialog(this, details.toString(), 
             "Detalles del Ticket", JOptionPane.INFORMATION_MESSAGE);
+    }
+    private void exportToPDF() {
+        
+        int selectedMonth = MesComboBox.getSelectedIndex() + 1;
+        int selectedYear = Integer.parseInt((String) AñoComboBox.getSelectedItem());
+        List<TicketRecord> filteredTickets = filterTicketsByMonthAndYear(
+            ConnectionDB.getAllTickets(), selectedMonth, selectedYear);
+        
+        long uniquePatients = filteredTickets.stream()
+            .map(TicketRecord::getNombrePaciente)
+            .distinct()
+            .count();
+        
+        double totalSales = filteredTickets.stream()
+            .mapToDouble(TicketRecord::getTotal)
+            .sum();
+        
+       
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar reporte PDF");
+        
+        
+        String[] monthNames = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+        String defaultFileName = String.format("Reporte_%s_%d.pdf", 
+            monthNames[selectedMonth - 1], selectedYear);
+        fileChooser.setSelectedFile(new File(defaultFileName));
+        
+   
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf");
+        fileChooser.setFileFilter(filter);
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            
+            // Add .pdf extension if not present
+            if (!filePath.toLowerCase().endsWith(".pdf")) {
+                filePath += ".pdf";
+            }
+            
+            boolean success = PDFExporter.exportToPDF(filePath, selectedMonth, selectedYear, 
+                uniquePatients, totalSales, filteredTickets);
+            
+            if (success) {
+                JOptionPane.showMessageDialog(this, 
+                    "Reporte PDF exportado exitosamente a:\n" + filePath,
+                    "Exportación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error al exportar el reporte PDF.\nAsegúrese de tener la librería iText en el classpath.",
+                    "Error de Exportación", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    private void exportToCSV() {
+        int selectedMonth = MesComboBox.getSelectedIndex() + 1;
+        int selectedYear = Integer.parseInt((String) AñoComboBox.getSelectedItem());
+        List<TicketRecord> filteredTickets = filterTicketsByMonthAndYear(
+            ConnectionDB.getAllTickets(), selectedMonth, selectedYear);
+        
+        long uniquePatients = filteredTickets.stream()
+            .map(TicketRecord::getNombrePaciente)
+            .distinct()
+            .count();
+        
+        double totalSales = filteredTickets.stream()
+            .mapToDouble(TicketRecord::getTotal)
+            .sum();
+        
+    
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar reporte CSV");
+        
+        
+        String[] monthNames = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        };
+        String defaultFileName = String.format("Reporte_%s_%d.csv", 
+            monthNames[selectedMonth - 1], selectedYear);
+        fileChooser.setSelectedFile(new File(defaultFileName));
+        
+        // Set file filter
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos CSV (*.csv)", "csv");
+        fileChooser.setFileFilter(filter);
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+            
+            // Add .csv extension if not present
+            if (!filePath.toLowerCase().endsWith(".csv")) {
+                filePath += ".csv";
+            }
+            
+            boolean success = CSVExporter.exportToCSV(filePath, selectedMonth, selectedYear, 
+                uniquePatients, totalSales, filteredTickets);
+            
+            if (success) {
+                JOptionPane.showMessageDialog(this, 
+                    "Reporte CSV exportado exitosamente a:\n" + filePath,
+                    "Exportación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Error al exportar el reporte CSV",
+                    "Error de Exportación", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
