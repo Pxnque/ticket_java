@@ -37,7 +37,7 @@
           <Group type="102" attributes="0">
               <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="127" max="32767" attributes="0"/>
+              <EmptySpace pref="10" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -104,7 +104,7 @@
                   <Component id="jScrollPane1" min="-2" pref="233" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -153,13 +153,18 @@
         <Component class="javax.swing.JComboBox" name="A&#xf1;oComboBox">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="6">
+              <StringArray count="11">
                 <StringItem index="0" value="2025"/>
                 <StringItem index="1" value="2026"/>
                 <StringItem index="2" value="2027"/>
                 <StringItem index="3" value="2028"/>
                 <StringItem index="4" value="2029"/>
                 <StringItem index="5" value="2030"/>
+                <StringItem index="6" value="2031"/>
+                <StringItem index="7" value="2032"/>
+                <StringItem index="8" value="2033"/>
+                <StringItem index="9" value="2034"/>
+                <StringItem index="10" value="2035"/>
               </StringArray>
             </Property>
           </Properties>
@@ -187,7 +192,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
                               <Component id="pacientelabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="0" pref="66" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="67" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Component id="cantidadpacienteslabel" max="32767" attributes="0"/>
