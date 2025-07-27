@@ -460,6 +460,7 @@ public class App extends javax.swing.JFrame {
         tableModel.setRowCount(0);
         labelTotal.setText("Total: $0");
         pacienteField.setText("");
+        
     }
     private void agregarItem() {
     try {
